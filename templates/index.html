@@ -6,4 +6,15 @@
 
 {% block body %}
 
+<h1>Login</h1><hr><br>
+
+<form action="{{'/profile/%s'%db[0][3]}}">
+    <input type="text" id="uid" name="uid" placeholder="User ID"><br>
+    <input type="text" id="pwd" name="pwd" placeholder="Password"><br><br>
+    <input type="submit" value="Login">
+</form>
+
+<br><br><a href="create">Create Account</a>
+<br><a href="forgot_pwd">Forgot Password?</a>
+
 {% endblock %}
