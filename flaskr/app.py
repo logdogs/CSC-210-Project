@@ -53,6 +53,8 @@ if __name__ == "__main__":
     # db.create_all()
     import database
     app.register_blueprint(database.bp)
-    database.init_db()
+    import auth 
+    app.register_blueprint(auth.bp)
+    # database.init_db()
     app.run(debug=True)
 

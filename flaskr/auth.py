@@ -5,17 +5,17 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from flaskr.database import get_db
-from flaskr.database import createAccount, getAccount, deleteAccount, createChildAccount
+import database
 
-bp = Blueprint("auth", __name__, url_prefix="auth")
+bp = Blueprint("auth", __name__, url_prefix="/auth")
+db = database.db
 
-bp.route('/login')
+@bp.route('/login')
 def login():
 
     return
 
-bp.route('/register', methods=('GET', 'POST'))
+@bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -25,7 +25,6 @@ def register():
         last_name = request.form['last_name']
         ssn = request.form['ssn']
         email = request.form['email']
-        db = get_db()
         error = None
 
         if not username:
@@ -43,8 +42,8 @@ def register():
         
         if error is None:
             if not middle_name:
-                createAccount(first_name, last_name, ssn, username, password, email, )
+                db.createAccount(first_name, last_name, ssn, username, password, email, )
             else:
-                createAccount(first_name, last_name, ssn, username, password, email, middle_name)
+                db.createAccount(first_name, last_name, ssn, username, password, email, middle_name)
                 
-    return
+    return render_template('create.html')
