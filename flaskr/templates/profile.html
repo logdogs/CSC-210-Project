@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+{% block body %}
+
+<h1>Welcome {{db[0][0]}} {{db[0][1]}}</h1><hr><br>
+
+<b>Checking Balance:</b> {{db[0][6]}}
+<br><b>Saving Balance:</b> {{db[0][7]}}
+
+<br><br><a href="/">Log Out</a>
+
+
+{% endblock %}
