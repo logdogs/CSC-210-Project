@@ -2,7 +2,7 @@
 from flask import Flask, redirect, render_template, url_for, Blueprint, current_app, g
 import sqlalchemy as sql
 from sqlalchemy.sql.schema import ForeignKey, Table
-from sqlalchemy.sql.sqltypes import VARCHAR
+from sqlalchemy.sql.sqltypes import INTEGER, VARCHAR
 from sqlalchemy.sql.sqltypes import DECIMAL
 from sqlalchemy.sql.schema import Column
 
@@ -15,10 +15,13 @@ connection = engine.connect()
 USERS = Table (
     'USERS', meta,
     Column('first_name', VARCHAR(50), nullable=False),
+    Column('middle_name', VARCHAR(50)),
     Column('last_name', VARCHAR(50), nullable=False),
     Column('ssn', VARCHAR(9), unique=True, nullable=False),
     Column('username', VARCHAR(100), unique=True, nullable=False),
-    Column('user_id', VARCHAR(9), primary_key=True)
+    Column('password', VARCHAR(100), unique=True, nullable=False),
+    Column('email', VARCHAR(100), unique=True, nullable=False),
+    Column('user_id', INTEGER, autoincrement=True, primary_key=True)
 )
 HAS_MIDDLE_NAME = Table (
     'HAS_MIDDLE_NAME', meta,
@@ -46,9 +49,13 @@ CHECKING_ACCOUNT = Table (
 def get_db():
     meta.create_all(engine)
 
-def createAccount(fn, ln, s, un, ui):
-    insert_statement = USERS.insert().values(first_name=fn, last_name=ln, ssn=s, username=un, user_id=ui)
-    result = connection.execute(insert_statement)
+def createAccount(fn, ln, s, un, pw, e, mn=None):
+    if mn==None:
+        insert_statement = USERS.insert().values(first_name=fn, last_name=ln, ssn=s, username=un, password=pw, email=e)
+        result = connection.execute(insert_statement)
+    else:
+        insert_statement = USERS.insert().values(first_name=fn, middle_name=mn, last_name=ln, ssn=s, username=un, password=pw, email=e)
+        result = connection.execute(insert_statement)
     return result
 
 def getAccount(username):
@@ -61,11 +68,15 @@ def deleteAccount(username):
     result = connection.execute(delete_statement)
     return result
 
-def createChildAccount(fn, ln, s, un, ui, ps, cap):
-    select_statement = USERS.select().where(USERS.ssn==ps)
+def createChildAccount(fn, ln, s, un, pw, e, pssn, cap, mn=None):
+    select_statement = USERS.select().where(USERS.ssn==pssn)
     select_result = connection.execute(select_statement)
-    insert_user_statement = USERS.insert().values(first_name=fn, last_name=ln, ssn=s, user_name=un, user_id=ui)
-    insert_user_result = connection.execute(insert_user_statement)
-    insert_parent_child_statement = USERS.insert().values(parent_id=select_result.user_id, child_id=ui, spending_cap=cap)
+    if mn==None:
+        insert_user_statement = USERS.insert().values(first_name=fn, last_name=ln, ssn=s, user_name=un)
+        insert_user_result = connection.execute(insert_user_statement)
+    else:
+        insert_user_statement = USERS.insert().values(first_name=fn, middle_name=mn, last_name=ln, ssn=s, user_name=un, password=pw, email=e, user_id=ui)
+        insert_user_result = connection.execute(insert_user_statement)
+    insert_parent_child_statement = USERS.insert().values(parent_id=select_result.user_id, spending_cap=cap)
     insert_parent_child_result = connection.execute(insert_parent_child_statement)
     return (insert_user_result, insert_parent_child_result)
