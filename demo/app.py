@@ -192,11 +192,16 @@ def end_session():
 #User List. Only admin has access to this
 @app.route("/user_list")
 def user_list():
-    if session["username"] == "admin":
-        return render_template("user_list.html", values=users.query.all())
-    else:
-        flash("You have to be admin to view this list!")
-        return redirect(url_for("home")) 
+    try:
+        if session["username"] == "admin":
+            return render_template("user_list.html", values=users.query.all())
+        else:
+            flash("You have to be admin to view this list!")
+            return redirect(url_for("home")) 
+    except:
+            flash("You have to be admin to view this list!")
+            return redirect(url_for("home")) 
+
 
 
 #Main creates db table before running Flask
