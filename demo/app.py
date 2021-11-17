@@ -49,6 +49,7 @@ def home():
     return render_template("index.html")
 
 
+#Create account
 @app.route("/create", methods=["POST", "GET"])
 def create():
     #If we've just entered information, it will be stored in session and db
@@ -66,7 +67,7 @@ def create():
         #If duplicate account found
         found_user = users.query.filter_by(username=username).first()
         if found_user:
-            flash("Account with same username already exists")
+            flash("Account with same username already exists.")
             return redirect(url_for("create")) 
 
         #Can create new user instance
@@ -130,7 +131,7 @@ def login():
             return redirect(url_for("user", user_id=session["user_id"]))
         #Otherwise, let the user know they have entered wrong information
         else:
-            flash("Wrong log in information. Check credinatls.")
+            flash("Username or password is incorrect. Try again.")
             return redirect(url_for("login")) 
 
     #If we enter this page without filling form, check if user is already logged in
@@ -144,7 +145,6 @@ def login():
 #User dashboard. All information for users will be displayed here.
 @app.route("/user/<user_id>", methods=["POST", "GET"])
 def user(user_id):
-    email = None
     #If there is session, get info from that user
     if "username" in session:
         first_name = session["first_name"]
