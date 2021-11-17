@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+{% block body %}
+
+<h1>Create</h1><hr><br>
+
+<form action="#" method="POST">
+    <input type="first_name" name="first_name" placeholder="First name">
+    <input type="middle_name" name="middle_name" placeholder="Middle name">
+    <input type="last_name" name="last_name" placeholder="Last name">
+    <input type="ssn" name="ssn" placeholder="SSN">
+    <input type="username" name="username" placeholder="Username">
+    <input type="email" name="email" placeholder="Email">
+    <input type="password" name="password" placeholder="Password">
+    <p><input type="submit" name="submit" /></p>
+</form>
+<form action="/">
+    <p><input type="submit" name="home" value="Back" /></p>
+</form>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+{% block body %}
+
+<h1>BANK</h1><hr>
+
+<form action="login">
+    <p><input type="submit" name="submit" value="login"/></p>
+</form>
+
+<form action="create">
+    <p><input type="submit" name="submit" value="create"/></p>
+</form>
+
+<form action="/user_list">
+    <p><input type="submit" name="user_list" value="User List" /></p>
+</form>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% endblock %}

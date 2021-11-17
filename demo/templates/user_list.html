@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+{% block body %}
+
+<h1>User List</h1><hr><br>
+
+<table>
+    <tr>
+        <th>First Name</th>
+        <th>Middle Name</th>
+        <th>Last Name</th>
+        <th>SSN</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Password</th>
+        <th>User ID</th>
+        <th>Saving Balance</th>
+        <th>Saving Account Number</th>
+        <th>Checking Balance</th>
+        <th>Checking Account Number</th>
+    </tr>
+
+    {% for item in values %}
+        <tr>
+            <td>{{item.first_name}}</td>
+            <td>{{item.middle_name}}</td>
+            <td>{{item.last_name}}</td>
+            <td>{{item.ssn}}</td>
+            <td>{{item.username}}</td>
+            <td>{{item.email}}</td>
+            <td>{{item.password}}</td>
+            <td>{{item.user_id}}</td>
+            <td>{{item.saving_balance}}</td>
+            <td>{{item.saving_acc_no}}</td>
+            <td>{{item.checking_balance}}</td>
+            <td>{{item.checking_acc_no}}</td>
+        </tr>
+    {% endfor %}
+
+</table>
+
+<form action="/">
+    <p><input type="submit" name="home" value="Back" /></p>
+</form>
+
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+{% block body %}
+
+<h1>Welcome back {{first_name}}!</h1><hr><br>
+<h2>Savings: {{saving_acc_no}}</h2>
+<h2>${{saving_balance}}</h2><hr>
+<h2>Checking: {{checking_acc_no}}</h2>
+<h2>${{checking_balance}}</h2><br><hr>
+
+
+<form action="/">
+    <p><input type="submit" name="home" value="Home" /></p>
+</form>
+<form action="/logout">
+    <p><input type="submit" name="logout" value="Log out" /></p>
+</form>
+
+
+{% endblock %}
