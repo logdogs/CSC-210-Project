@@ -110,10 +110,15 @@ def login():
     #If we've just entered information, it will use that information to check if user exists
     if request.method == "POST":
         username = request.form["username"]
+        password = request.form["password"]
 
         #Check if name existed
         found_user = users.query.filter_by(username=username).first()
-        #If found, add user's info to session, then go to the page
+        #If found, check if password is correct
+        if password != found_user.password:
+            flash("Username or password is incorrect. Try again.")
+            return redirect(url_for("login")) 
+        #If password is correct, add user's info to session, then go to the page
         if found_user:
             session["first_name"] = found_user.first_name
             session["middle_name"] = found_user.middle_name
