@@ -53,36 +53,39 @@ class db:
     def get_db(self):
         self.init_db()
 
-
-    def createAccount(self, fn, ln, s, un, pw, e, mn=None):
+    @classmethod
+    def createAccount(fn, ln, s, un, pw, e, mn=None):
         if mn==None:
-            insert_statement = self.USERS.insert().values(first_name=fn, last_name=ln, ssn=s, username=un, password=pw, email=e)
-            result = self.connection.execute(insert_statement)
+            insert_statement = USERS.insert().values(first_name=fn, last_name=ln, ssn=s, username=un, password=pw, email=e)
+            result = connection.execute(insert_statement)
         else:
-            insert_statement = self.USERS.insert().values(first_name=fn, middle_name=mn, last_name=ln, ssn=s, username=un, password=pw, email=e)
-            result = self.connection.execute(insert_statement)
+            insert_statement = USERS.insert().values(first_name=fn, middle_name=mn, last_name=ln, ssn=s, username=un, password=pw, email=e)
+            result = connection.execute(insert_statement)
         return result
 
-    def getAccount(self, username):
-        select_statement = self.USERS.select().where(self.USERS.user_name==username)
-        result = self.connection.execute(select_statement).fetchone()
+    @classmethod
+    def getAccount(username):
+        select_statement = USERS.select().where(USERS.user_name==username)
+        result = connection.execute(select_statement).fetchone()
         return result
 
-    def deleteAccount(self, username):
-        delete_statement = self.USERS.delete().where(self.USERS.user_name==username)
-        result = self.connection.execute(delete_statement).fetchone()
+    @classmethod
+    def deleteAccount(username):
+        delete_statement = USERS.delete().where(USERS.user_name==username)
+        result = connection.execute(delete_statement).fetchone()
         return result
 
-    def createChildAccount(self, fn, ln, s, un, pw, e, pssn, cap, mn=None):
-        select_statement = self.USERS.select().where(self.USERS.ssn==pssn)
-        select_result = self.connection.execute(select_statement).fetchone()
+    @classmethod
+    def createChildAccount(fn, ln, s, un, pw, e, pssn, cap, mn=None):
+        select_statement = USERS.select().where(USERS.ssn==pssn)
+        select_result = connection.execute(select_statement).fetchone()
         if mn==None:
-            insert_user_statement = self.USERS.insert().values(first_name=fn, last_name=ln, ssn=s, user_name=un)
-            insert_user_result = self.connection.execute(insert_user_statement)
+            insert_user_statement = USERS.insert().values(first_name=fn, last_name=ln, ssn=s, user_name=un)
+            insert_user_result = connection.execute(insert_user_statement)
         else:
-            insert_user_statement = self.USERS.insert().values(first_name=fn, middle_name=mn, last_name=ln, ssn=s, user_name=un, password=pw, email=e, user_id=ui)
-            insert_user_result = self.connection.execute(insert_user_statement)
-        insert_parent_child_statement = self.USERS.insert().values(parent_id=select_result.user_id, spending_cap=cap)
-        insert_parent_child_result = self.connection.execute(insert_parent_child_statement)
+            insert_user_statement = USERS.insert().values(first_name=fn, middle_name=mn, last_name=ln, ssn=s, user_name=un, password=pw, email=e, user_id=ui)
+            insert_user_result = connection.execute(insert_user_statement)
+        insert_parent_child_statement = USERS.insert().values(parent_id=select_result.user_id, spending_cap=cap)
+        insert_parent_child_result = connection.execute(insert_parent_child_statement)
         return (insert_user_result, insert_parent_child_result)
 
