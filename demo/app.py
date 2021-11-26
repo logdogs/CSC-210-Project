@@ -42,6 +42,10 @@ class users(db.Model):
         self.checking_balance = checking_balance
         self.checking_acc_no = checking_acc_no
 
+# Stands for "parent-child relation"
+class pcr(db.Model):
+    _id = db.Column("id", db.Integer, primary_key=True)
+    
 
 #Home page
 @app.route("/", methods=["POST", "GET"])
@@ -178,8 +182,28 @@ def logout():
     return redirect(url_for("home"))
 
 # This will go to a place that has the user register an account for their child
-@app.route("/create_child_account")
+@app.route("/create_child_account", methods=["POST", "GET"])
 def create_child_account():
+    if request.method == "POST":
+        # Need to create a new account in the database, as well as link it via the has-child relation to the parent
+        firstName = request.form['first_name']
+        middleName = request.form['middle_name']
+        lastName = request.form['last_name']
+        social = request.form['ssn']
+        parent_social = request.form['parent_ssn']
+        username = request.form['user_name']
+        mail = request.form['email']
+        pw = request.form['password']
+        
+        # Make sure they didn't re-add their child
+        forgotten_child = users.query.filter_by(ssn=social).first()
+        if forgotten_child:
+            flash("Child account already exists.")
+            return render_template("create_child.html")
+
+        child = users(firstName, middleName, lastName, social, username, mail, pw)
+        parent_child_rel = 
+
     return render_template("create_child.html")
 
 #Pops everything from session
