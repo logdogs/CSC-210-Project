@@ -24,6 +24,10 @@
     <form action="/user_list">
         <p><input type="submit" id="user_list" name="user_list" value="User List"></p>
     </form>
+{% else %}
+    <form action="/create_child_account">
+        <p><input type="submit" id="register_child" name="register_child" value="Register Child" ></p>
+    </form>
 {% endif %}
 
 {% endblock %}

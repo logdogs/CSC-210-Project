@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block head %}
+{% endblock %}
+{% block body %}
+    <form action="#" method="POST">
+        <input type="first_name" name="first_name" placeholder="First name" required>
+        <input type="middle_name" name= "middle_name" placeholder="Middle name">
+        <input type="last_name" name="last_name" placeholder="Last name" required>
+        <input type="ssn" name="ssn" placeholder="Social security number" required>
+        <input type="parent_ssn" name="parent_ssn" placeholder="Parent's social security number" required>
+        <input type="user_name" name="user_name" placeholder="Username" required>
+        <input type="email" name="email" placeholder="Email" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <input type="submit" name="submit"/>
+
+    </form>
+{% endblock %}

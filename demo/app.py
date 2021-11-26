@@ -177,6 +177,10 @@ def logout():
     end_session()
     return redirect(url_for("home"))
 
+# This will go to a place that has the user register an account for their child
+@app.route("/create_child_account")
+def create_child_account():
+    return render_template("create_child.html")
 
 #Pops everything from session
 def end_session():
