@@ -45,7 +45,13 @@ class users(db.Model):
 # Stands for "parent-child relation"
 class pcr(db.Model):
     _id = db.Column("id", db.Integer, primary_key=True)
+    # Represents the parent and child id's, respectively
+    parent = db.Column(db.Integer) 
+    child = db.Column(db.Integer)
     
+    def __init__(self, parent_id, child_id):
+        self.parent = parent_id
+        self.child = child_id
 
 #Home page
 @app.route("/", methods=["POST", "GET"])
@@ -201,8 +207,13 @@ def create_child_account():
             flash("Child account already exists.")
             return render_template("create_child.html")
 
+        # Create and add the child to the database
         child = users(firstName, middleName, lastName, social, username, mail, pw)
-        parent_child_rel = 
+        db.add(child)
+        # Find the parent, create the relation between them and their child, then add that to the database
+        parent = users.query().filter_by(ssn=parent_social).fetchone()
+        parent_child_rel = pcr(parent.ssn, social)
+        db.add(parent_child_rel)
 
     return render_template("create_child.html")
 
