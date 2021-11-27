@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+<form action="/checking_deposit" method="POST">
+    <div>
+        <label for="amount">Amount to deposit:</label>
+        <input type="number" name="amount" id="amount" value="amount" required>
+    </div>
+    <input type="submit">
+</form>
+{% endblock %}

@@ -1,3 +1,8 @@
 table, th, td {
     border:1px solid black;
-  }
+}
+#money {
+  border:5px;
+  border-style:solid;
+  padding:10px;
+}

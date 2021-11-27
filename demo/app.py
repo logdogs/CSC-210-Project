@@ -217,6 +217,35 @@ def create_child_account():
 
     return render_template("create_child.html")
 
+#
+@app.route("/addToChecking")
+def changeMoney():
+    return render_template("addToChecking.html")
+
+#
+@app.route("/addToSavings")
+def addToSavings():
+    return render_template("addToSavings.html")
+
+#
+@app.route("/checking_deposit", methods=["POST", "GET"])
+def checking_deposit():
+    # Update the database
+    user = users.query.filter_by(username=session['username']).first()
+    current_amount = user.checking_balance
+    print("Current amount:" + str(current_amount))
+    print("Amount to add:" + str(request.form['amount']))
+    updated_amount = current_amount + request.form['amount']
+    stmt = (db.update(users).where(users.ssn==user.ssn).values(checking_balance=updated_amount))
+    db.session.execute(stmt)
+    db.session.commit()
+    return render_template("successful_add.html")
+#
+@app.route("/savings_deposit", methods=["POST", "GET"])
+def savings_deposit():
+    # Update the database
+    return render_template("successful_add.html")
+
 #Pops everything from session
 def end_session():
     session.pop("first_name", None)

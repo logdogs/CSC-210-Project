@@ -8,11 +8,20 @@
 {% block body %}
 
 <h1>Welcome back {{first_name}}!</h1><hr><br>
-<h2>Savings: {{saving_acc_no}}</h2>
-<h2>${{saving_balance}}</h2><hr>
-<h2>Checking: {{checking_acc_no}}</h2>
-<h2>${{checking_balance}}</h2><br><hr>
-
+<div id="money">
+    <h2>Savings: {{saving_acc_no}}</h2>
+    <h2>${{saving_balance}}</h2><hr>
+    <form action="/addToSavings">
+        <input type="submit" name="add_to_savings" id="add_to_savings" value="Add to Savings">
+    </form>
+</div>
+<div id="money">
+    <h2>Checking: {{checking_acc_no}}</h2>
+    <h2>${{checking_balance}}</h2><br><hr>
+    <form action="/addToChecking">
+        <input type="submit" name="add_to_checking" id="add_to_checking" value="Add to Checking">
+    </form>
+</div>
 
 <form action="/">
     <p><input type="submit" name="home" value="Home" /></p>
