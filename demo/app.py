@@ -2,6 +2,7 @@ from flask import Flask, render_template, url_for, redirect, request, session
 from flask.helpers import flash
 from flask_sqlalchemy import SQLAlchemy
 import random
+import bcrypt
 
 #Flask and sqlalchemy stuff initialized here
 app = Flask(__name__)
@@ -21,21 +22,21 @@ class users(db.Model):
     ssn = db.Column(db.String(9))
     username = db.Column(db.String(100))
     email = db.Column(db.String(100))
-    password = db.Column(db.String(100))
+    hash = db.Column(db.String(100))
     user_id = db.Column(db.String(10))
     saving_balance = db.Column(db.String(10))
     saving_acc_no = db.Column(db.String(10))
     checking_balance = db.Column(db.String(10))
     checking_acc_no = db.Column(db.String(10))
 
-    def __init__(self, first_name, middle_name, last_name, ssn, username, email, password, user_id, saving_balance, saving_acc_no, checking_balance, checking_acc_no):
+    def __init__(self, first_name, middle_name, last_name, ssn, username, email, hash, user_id, saving_balance, saving_acc_no, checking_balance, checking_acc_no):
         self.first_name = first_name
         self.middle_name = middle_name
         self.last_name = last_name
         self.ssn = ssn
         self.username = username
         self.email = email
-        self.password = password
+        self.hash = hash
         self.user_id = user_id
         self.saving_balance = saving_balance
         self.saving_acc_no = saving_acc_no
@@ -80,8 +81,12 @@ def create():
             flash("Account with same username already exists.")
             return redirect(url_for("create")) 
 
-        #Can create new user instance
-        usr = users(first_name, middle_name, last_name, ssn, username, email, password, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), 0, random.randint(0, 9999999999))
+        #Hash password and, create new user instance
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+        #print("CREATE HASHED IS {hashed}".format(hashed=hashed))
+
+        usr = users(first_name, middle_name, last_name, ssn, username, email, hashed, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), 0, random.randint(0, 9999999999))
         db.session.add(usr)
         db.session.commit()
 
@@ -125,7 +130,7 @@ def login():
         #Check if name existed
         found_user = users.query.filter_by(username=username).first()
         #If found, check if password is correct
-        if password != found_user.password:
+        if not bcrypt.checkpw(password.encode('utf-8'), found_user.hash):
             flash("Username or password is incorrect. Try again.")
             return redirect(url_for("login")) 
         #If password is correct, add user's info to session, then go to the page
@@ -136,7 +141,7 @@ def login():
             session["ssn"] = found_user.ssn
             session["username"] = username
             session["email"] = found_user.email
-            session["password"] = found_user.password
+            session["password"] = found_user.hash
             session["user_id"] = found_user.user_id
             session["saving_balance"] = found_user.saving_balance
             session["saving_acc_no"] = found_user.saving_acc_no
