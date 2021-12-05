@@ -1,26 +1,58 @@
 {% extends 'base.html' %}
 
 {% block head %}
-
 {% endblock %}
 
 
 {% block body %}
 
-<h1>BANK</h1><hr>
+<h1>BANK</h1><hr><br>
 
-<form action="login">
-    <p><input type="submit" name="submit" value="login"/></p>
-</form>
+<!-- <img src="/static/images/CCE.png" alt="CCE"> -->
 
-<form action="create">
-    <p><input type="submit" name="submit" value="create"/></p>
+<div class="center">
+    <h1>Login</h1>
+    <form action="#" method="post">
+
+      <div class="txt_field">
+        <input type="username" name="username" required>
+        <span></span>
+        <label>Username</label>
+      </div>
+
+      <div class="txt_field">
+        <input type="password" name="password" required>
+        <span></span>
+        <label>Password</label>
+      </div>
+
+      <a href="{{ url_for('reset') }}"><div class="pass">Forgot Password?</div></a>
+      <input type="submit" name="submit" value="Login">
+    </form>
+
+    <div class="signup_link">
+        <form action="create">
+            <span><input type="submit" name="submit" value="Signup"/></span>
+        </form>
+    </div>
+  </div>
+
+<!--
+<form action="#" method="post">
+<input type="username" name="username" placeholder="Username">
+<input type="password" name="password" placeholder="Password">
+<p><input type="submit" name="submit"/></p>
 </form>
+<form action="/">
+    <p><input type="submit" name="home" value="Back" /></p>
+</form>
+-->
+
 {% with messages = get_flashed_messages() %}
     {% if messages %}
         {% for msg in messages %}
             <p>{{msg}}</p>
-        \\{% endfor %}
+        {% endfor %}
     {% endif %}
 {% endwith %}
 

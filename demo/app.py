@@ -55,9 +55,9 @@ class pcr(db.Model):
         self.child = child_id
 
 #Home page
-@app.route("/", methods=["POST", "GET"])
-def home():
-    return render_template("index.html")
+#@app.route("/", methods=["POST", "GET"])
+#def home():
+#    return redirect(url_for("login"))
 
 
 #Create account
@@ -120,8 +120,11 @@ def create():
 
 
 #Login page
-@app.route("/login", methods=["POST", "GET"])
-def login():
+#@app.route("/login", methods=["POST", "GET"])
+#def login():
+#Home page
+@app.route("/", methods=["POST", "GET"])
+def home():
     #If we've just entered information, it will use that information to check if user exists
     if request.method == "POST":
         username = request.form["username"]
@@ -132,7 +135,7 @@ def login():
         #If found, check if password is correct
         if not bcrypt.checkpw(password.encode('utf-8'), found_user.hash):
             flash("Username or password is incorrect. Try again.")
-            return redirect(url_for("login")) 
+            return redirect(url_for("home")) 
         #If password is correct, add user's info to session, then go to the page
         if found_user:
             session["first_name"] = found_user.first_name
@@ -152,14 +155,14 @@ def login():
         #Otherwise, let the user know they have entered wrong information
         else:
             flash("Username or password is incorrect. Try again.")
-            return redirect(url_for("login")) 
+            return redirect(url_for("home")) 
 
     #If we enter this page without filling form, check if user is already logged in
     #If so, return user, otherwise show login form
     else:
         if "username" in session:
             return redirect(url_for("user", user_id=session["user_id"]))
-        return render_template("login.html")
+        return render_template("index.html")
 
 
 #User dashboard. All information for users will be displayed here.
@@ -183,7 +186,7 @@ def user(user_id):
         return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no)
     #If there is no session, make user log in
     else:
-        return redirect(url_for("login"))
+        return redirect(url_for("home"))
 
 
 #This ends session and redirects the user to the home page
@@ -280,6 +283,9 @@ def user_list():
             flash("You have to be admin to view this list!")
             return redirect(url_for("home")) 
 
+@app.route("/reset", methods=["POST", "GET"])
+def reset():
+    return render_template("reset.html")
 
 
 #Main creates db table before running Flask
