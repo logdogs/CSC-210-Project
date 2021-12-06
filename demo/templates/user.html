@@ -6,22 +6,25 @@
 
 
 {% block body %}
+<div id = "logo">
+    <img src="/static/images/CCE.png" alt="CCE" style="width:100px;height:100px;">
+</div> 
+<h1>Welcome back {{first_name}}! </h1>
 
-<h1>Welcome back {{first_name}}!</h1><hr><br>
-<div id="money">
-    <h2>Savings: {{saving_acc_no}}</h2>
-    <h2>${{saving_balance}}</h2><hr>
-    <form action="/addToSavings">
-        <input type="submit" name="add_to_savings" id="add_to_savings" value="Add to Savings">
-    </form>
-</div>
-<div id="money">
-    <h2>Checking: {{checking_acc_no}}</h2>
-    <h2>${{checking_balance}}</h2><br><hr>
-    <form action="/addToChecking">
-        <input type="submit" name="add_to_checking" id="add_to_checking" value="Add to Checking">
-    </form>
-</div>
+    <div id="money">
+        <h2>Savings: {{saving_acc_no}}</h2>
+        <h3>${{saving_balance}}</h3><hr>
+        <form action="/addToSavings">
+            <input type="submit" name="add_to_savings" id="add_to_savings" value="Add to Savings">
+        </form>
+    </div>
+    <div id="money">
+        <h2>Checking: {{checking_acc_no}}</h2>
+        <h3>${{checking_balance}}</h3><hr>
+        <form action="/addToChecking">
+            <input type="submit" name="add_to_checking" id="add_to_checking" value="Add to Checking">
+        </form>
+    </div> 
 
 <!--
 <form action="/">
@@ -29,9 +32,6 @@
 </form>
 -->
 
-<form action="/logout">
-    <p><input type="submit" name="logout" value="Log out" /></p>
-</form>
 {% if username == "admin" %}    
     <form action="/user_list">
         <p><input type="submit" id="user_list" name="user_list" value="User List"></p>
@@ -41,5 +41,8 @@
         <p><input type="submit" id="register_child" name="register_child" value="Register Child" ></p>
     </form>
 {% endif %}
-
+<form action="/logout">
+    <p><input type="submit" style="background-color:#2ec9ff; border-color:#2ec9ff;" name="logout" value="Log out" /></p>
+</form>
 {% endblock %}
+
