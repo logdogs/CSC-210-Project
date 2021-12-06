@@ -5,38 +5,40 @@
 
 
 {% block body %}
-
-<h1>BANK</h1><hr><br>
+<div id = "logo">
+    <img src="/static/images/CCE.png" alt="CCE" style="width:100px;height:100px;">
+</div> 
+<h1>CCE Banking</h1>
 
 <!-- <img src="/static/images/CCE.png" alt="CCE"> -->
+<div id = "index">
+  <div class="center">
+      <h1>Login</h1>
+      <form action="#" method="post">
 
-<div class="center">
-    <h1>Login</h1>
-    <form action="#" method="post">
+        <div class="txt_field">
+          <input type="username" name="username" required>
+          <span></span>
+          <label>Username</label>
+        </div>
 
-      <div class="txt_field">
-        <input type="username" name="username" required>
-        <span></span>
-        <label>Username</label>
+        <div class="txt_field">
+          <input type="password" name="password" required>
+          <span></span>
+          <label>Password</label>
+        </div>
+
+        <a href="{{ url_for('reset') }}"><div class="pass">Forgot Password?</div></a>
+        <input type="submit" name="submit" value="Login">
+      </form>
+
+      <div class="signup_link">
+          <form action="create">
+              <span><input type="submit" name="submit" value="Sign Up"/></span>
+          </form>
       </div>
-
-      <div class="txt_field">
-        <input type="password" name="password" required>
-        <span></span>
-        <label>Password</label>
-      </div>
-
-      <a href="{{ url_for('reset') }}"><div class="pass">Forgot Password?</div></a>
-      <input type="submit" name="submit" value="Login">
-    </form>
-
-    <div class="signup_link">
-        <form action="create">
-            <span><input type="submit" name="submit" value="Signup"/></span>
-        </form>
-    </div>
   </div>
-
+</div>
 <!--
 <form action="#" method="post">
 <input type="username" name="username" placeholder="Username">
@@ -57,3 +59,4 @@
 {% endwith %}
 
 {% endblock %}
+
