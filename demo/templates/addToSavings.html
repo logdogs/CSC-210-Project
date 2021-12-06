@@ -5,10 +5,21 @@
 
 {% block body %}
     <form action="/savings_deposit" method="POST">
-        <div>
-            <label for="amount">Amount to deposit:</label>
-            <input type="number" name="amount" id="amount" value="amount" required>
-        </div>
+        <div id = "logo">
+            <img src="/static/images/CCE.png" alt="CCE" style="width:100px;height:100px;">
+        </div> 
+        <header>
+            <h1>Deposit</h1>
+        </header><hr>
+        <section> 
+            <h2>Savings Account</h2>
+        </section>
+        <section> 
+            <article>
+                    <label for="amount">Enter amount:</label>
+                    <input type="number" name="amount" id="amount" value="amount" required>
+            </article>
+        </section>
         <input type="submit">
     </form>
 {% endblock %}
