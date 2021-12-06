@@ -1,10 +1,12 @@
+
 table, th, td {
     border:1px solid black;
 }
 #money {
-  border:5px;
+  border:1px;
   border-style:solid;
-  padding:10px;
+  padding:20px;
+  background-color: white;
 }
 
 a { text-decoration: none; }
@@ -16,13 +18,7 @@ a { text-decoration: none; }
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
 }
-body{
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(120deg,#2980b9, #d5eb0e6b);
-  height: 100vh;
-  overflow: hidden;
-}
+
 .center{
   position: absolute;
   top: 50%;
@@ -97,19 +93,20 @@ input[type="submit"]{
   width: 100%;
   height: 50px;
   border: 1px solid;
-  margin: 5px 0;
-  background: #2691d9;
+  margin: 10px 0;
+  background: #ffd104;
   border-radius: 25px;
   font-size: 18px;
-  color: #e9f4fb;
+  color: white;
   font-weight: 700;
   cursor: pointer;
   outline: none;
 }
 input[type="submit"]:hover{
-  border-color: #2691d9;
+  border-color: #ffd104;
   transition: .5s;
 }
+
 .signup_link{
   margin: 15px 0;
   text-align: center;
@@ -123,3 +120,79 @@ input[type="submit"]:hover{
 .signup_link a:hover{
   text-decoration: underline;
 }
+
+html {
+  font-family: sans-serif;
+}
+
+body{
+  margin: 0;
+  padding: 0;
+  background: white;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  padding: 0px;
+  text-align: center;
+  background-color: white;
+}
+
+h1 {
+  padding: 0px;
+  text-align: center;
+  color: black; 
+  line-height: 100px;
+  margin: 0;
+}
+
+h2 {
+  padding: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+h3 {
+  padding: 10px;
+  background-color: lightgrey;
+}
+
+section {
+  width: 320px;
+  margin: 0; 
+  padding: 0;
+  display: flex;
+  flex-flow: row wrap;
+}
+  
+article {
+  padding: 10px;
+  margin: 0px;
+  background: white;
+  color: black;
+  width: 320px;
+}
+
+
+#logo{ 
+	position:fixed; 
+	top:0; 
+	left:0; 
+} 
+
+#index{
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(120deg,#2980b9, white);
+  height: 100vh;
+  overflow: hidden;
+}
+
+#user {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(120deg,#2980b9, white);
+  overflow: hidden;
+}
+
