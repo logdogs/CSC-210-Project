@@ -6,64 +6,63 @@
 
 {% block body %}
 
-<h1>Create</h1><hr><br>
+<div id = "index"></div>
+  <div class="center">
+      <h1>Create Account</h1>
+      <form action="#" method="post">
 
-<div class="center">
-    <h1>Create Account</h1>
-    <form action="#" method="post">
+        <div class="txt_field">
+          <input type="first_name" name="first_name" required>
+          <span></span>
+          <label>First Name</label>
+        </div>
 
-      <div class="txt_field">
-        <input type="first_name" name="first_name" required>
-        <span></span>
-        <label>First name</label>
+        <div class="txt_field">
+          <input type="middle_name" name="middle_name" required>
+          <span></span>
+          <label>Middle Name</label>
+        </div>
+
+        <div class="txt_field">
+          <input type="last_name" name="last_name" required>
+          <span></span>
+          <label>Last Name</label>
+        </div>
+
+        <div class="txt_field">
+          <input type="ssn" name="ssn" required>
+          <span></span>
+          <label>SSN</label>
+        </div>
+
+        <div class="txt_field">
+          <input type="username" name="username" required>
+          <span></span>
+          <label>Username</label>
+        </div>
+
+        <div class="txt_field">
+          <input type="email" name="email" required>
+          <span></span>
+          <label>Email</label>
+        </div>
+
+        <div class="txt_field">
+          <input type="password" name="password" required>
+          <span></span>
+          <label>Password</label>
+        </div>
+
+        <input type="submit" name="submit" value="Sign Up">
+      </form>
+
+      <div class="signup_link">
+          <form action="/">
+              <span><input type="submit" name="home" value="Back"/></span>
+          </form>
       </div>
-
-      <div class="txt_field">
-        <input type="middle_name" name="middle_name" required>
-        <span></span>
-        <label>Middle name</label>
-      </div>
-
-      <div class="txt_field">
-        <input type="last_name" name="last_name" required>
-        <span></span>
-        <label>Last name</label>
-      </div>
-
-      <div class="txt_field">
-        <input type="ssn" name="ssn" required>
-        <span></span>
-        <label>SSN</label>
-      </div>
-
-      <div class="txt_field">
-        <input type="username" name="username" required>
-        <span></span>
-        <label>Username</label>
-      </div>
-
-      <div class="txt_field">
-        <input type="email" name="email" required>
-        <span></span>
-        <label>Email</label>
-      </div>
-
-      <div class="txt_field">
-        <input type="password" name="password" required>
-        <span></span>
-        <label>Password</label>
-      </div>
-
-      <input type="submit" name="submit" value="Signup">
-    </form>
-
-    <div class="signup_link">
-        <form action="/">
-            <span><input type="submit" name="home" value="Back"/></span>
-        </form>
-    </div>
   </div>
-
+</div>
   <!--
 <form action="#" method="POST">
     <input type="first_name" name="first_name" placeholder="First name" required>
