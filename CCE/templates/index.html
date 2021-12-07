@@ -5,12 +5,7 @@
 
 
 {% block body %}
-<div id = "logo">
-    <img src="/static/images/CCE.png" alt="CCE" style="width:100px;height:100px;">
-</div> 
-<h1>CCE Banking</h1>
 
-<!-- <img src="/static/images/CCE.png" alt="CCE"> -->
 <div id = "index">
   <div class="center">
       <h1>Login</h1>
@@ -38,6 +33,17 @@
           </form>
       </div>
   </div>
+
+<center>
+  {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          {% for msg in messages %}
+              <h3>{{msg}}</h3>
+          {% endfor %}
+      {% endif %}
+  {% endwith %}
+</center>
+
 </div>
 <!--
 <form action="#" method="post">
@@ -49,14 +55,6 @@
     <p><input type="submit" name="home" value="Back" /></p>
 </form>
 -->
-
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for msg in messages %}
-            <p>{{msg}}</p>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
 
 {% endblock %}
 

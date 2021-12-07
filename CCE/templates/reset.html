@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+{% block body %}
+
+<div id = "index">
+    
+    <div class="center">
+        <h1>Forgot Password</h1>
+        <form action="#" method="post">
+  
+          <div class="txt_field">
+            <input type="email" name="email" required>
+            <span></span>
+            <label>Email</label>
+          </div>
+  
+          <input type="submit" name="submit" value="Submit">
+        </form>
+    </div>
+
+<center>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for msg in messages %}
+                <h3>{{msg}}</h3>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</center>
+
+</div>
+
+
+
+
+{% endblock %}
+

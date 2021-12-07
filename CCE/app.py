@@ -3,12 +3,24 @@ from flask.helpers import flash
 from flask_sqlalchemy import SQLAlchemy
 import random
 import bcrypt
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
 
 #Flask and sqlalchemy stuff initialized here
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = "AJHHJAKKHJASKHJDKAJHJHELPHKFHJAKSASHJKADHJKHJKASHJKSAHDSJA"
+
+#Email confirmation stuff here
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'ccebankrochester@gmail.com'
+app.config['MAIL_PASSWORD'] = 'thisisapassword'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
+s = URLSafeTimedSerializer('AJHHJAKKHJASKHJDKAJHJHELPHKFHJAKSASHJKADHJKHJKASHJKSAHDSJA')
 
 #Database created
 db = SQLAlchemy(app)
@@ -283,9 +295,53 @@ def user_list():
             flash("You have to be admin to view this list!")
             return redirect(url_for("home")) 
 
+
+# Aks for email address, so it can send reset link
 @app.route("/reset", methods=["POST", "GET"])
 def reset():
-    return render_template("reset.html")
+    #If we've just entered information, it will use that information to check if user exists
+    if request.method == "POST":
+        email = request.form["email"]
+        #Check if email existed
+        found_user = users.query.filter_by(email=email).first()
+
+        if found_user:
+            token = s.dumps(email, salt='email-confirm')
+
+            msg = Message('CCE Reset Password', sender='cengizjahnozel@gmail.com', recipients=[email])
+            link = url_for('change_pw', token=token, _external=True)
+            msg.body = "Your password reset link is {}".format(link)
+            mail.send(msg)
+
+            flash("Password reset link has been sent to " + email)
+            flash("Make sure to check your spam folder!")
+            return redirect(url_for("reset"))
+        else:
+            flash("User with this email does not exist.")
+            return redirect(url_for("reset"))
+    else:
+        return render_template("reset.html")
+
+
+# Reset password
+@app.route("/change_pw/<token>", methods=["POST", "GET"])
+def change_pw(token):
+    #If we've just entered information, it will use that information to check if user exists
+    if request.method == "POST":
+        email = s.loads(token, salt='email-confirm', max_age=3600)
+        password = request.form["password"]
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+        stmt = (db.update(users).where(users.email==email).values(hash=hashed))
+        db.session.execute(stmt)
+        db.session.commit()
+        
+        flash("Password has been successfully reset!")
+        return redirect(url_for("home")) 
+
+    else:
+        email = s.loads(token, salt='email-confirm', max_age=3600)
+        return render_template("change_pw.html")
 
 
 #Main creates db table before running Flask

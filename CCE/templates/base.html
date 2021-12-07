@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+
+<html>
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width-device-width, intitial-scale=1.0">
+    <link rel="stylesheet" href="../static/style.css">
+    <script type='text/javascript' src='../static/heck.js'></script>
+    
+    {% block head %} {% endblock %}
+</head>
+
+
+<body style="background-color:#8fe9ff;">
+    <div id = "logo">
+        <a href="{{ url_for('home') }}"><img src="/static/images/CCE.png" alt="CCE" style="width:100px;height:100px;"></a>
+    </div> 
+    <h1>CCE Banking</h1>
+    {% block body %} {% endblock %}
+</body>
+
+
+</html>
