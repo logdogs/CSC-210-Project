@@ -6,7 +6,7 @@
 
 {% block body %}
 
-<div id = "index"></div>
+<div id = "index">
   <div class="center">
       <h1>Create Account</h1>
       <form action="#" method="post">
@@ -62,7 +62,19 @@
           </form>
       </div>
   </div>
+<center>
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+            <p>{{msg}}</p>
+        {% endfor %}
+    {% endif %}
+  {% endwith %}
+</center>
 </div>
+
+
+
   <!--
 <form action="#" method="POST">
     <input type="first_name" name="first_name" placeholder="First name" required>
@@ -78,12 +90,6 @@
     <p><input type="submit" name="home" value="Back" /></p>
 </form>
 -->
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for msg in messages %}
-            <p>{{msg}}</p>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+
 
 {% endblock %}
