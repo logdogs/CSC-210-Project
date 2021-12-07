@@ -349,6 +349,4 @@ def change_pw(token):
 #Main creates db table before running Flask
 if __name__ == "__main__":
     db.create_all()
-    os.popen('open http://localhost:5000;')
     app.run(debug=True)
-    #stream = os.popen('echo Returned output')
