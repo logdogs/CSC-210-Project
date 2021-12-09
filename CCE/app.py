@@ -201,7 +201,10 @@ def user(user_id):
         checking_balance = session["checking_balance"] # ***
         checking_acc_no = session["checking_acc_no"]
 
-        return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no)
+        # Get the children of the user
+        children = pcr.query.filter_by(parent=user_id).all()
+
+        return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, children=children)
     #If there is no session, make user log in
     else:
         return redirect(url_for("home"))

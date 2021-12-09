@@ -26,7 +26,13 @@
         <form action="/addToChecking">
             <input type="submit" name="add_to_checking" id="add_to_checking" value="Add to Checking">
         </form>
-    </div> 
+    </div>
+    <div>
+        <h2>Children Accounts: </h2>
+        {% for child in children %}
+            <a href="">{{child.username}}</a>
+        {% endfor %}
+    </div>
 
 <!--
 <form action="/">
