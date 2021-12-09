@@ -192,9 +192,13 @@ def user(user_id):
         email = session["email"]
         password = session["password"]
         user_id = session["user_id"]
-        saving_balance = session["saving_balance"]
+        # Want to reload the saving_balance and checking_balance
+        updated_user = users.query.filter_by(username=username).first()
+        session["saving_balance"] = updated_user.saving_balance
+        session["checking_balance"] = updated_user.checking_balance
+        saving_balance = session["saving_balance"] # ****
         saving_acc_no = session["saving_acc_no"]
-        checking_balance = session["checking_balance"]
+        checking_balance = session["checking_balance"] # ***
         checking_acc_no = session["checking_acc_no"]
 
         return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no)
@@ -255,17 +259,22 @@ def checking_deposit():
     # Update the database
     user = users.query.filter_by(username=session['username']).first()
     current_amount = user.checking_balance
-    print("Current amount:" + str(current_amount))
-    print("Amount to add:" + str(request.form['amount']))
-    updated_amount = current_amount + request.form['amount']
+    # Convert to floating point numbers, then convert back when entering the new value
+    updated_amount = str(float(current_amount) + float(request.form['amount']))
     stmt = (db.update(users).where(users.ssn==user.ssn).values(checking_balance=updated_amount))
     db.session.execute(stmt)
     db.session.commit()
+    
     return render_template("successful_add.html")
 #
 @app.route("/savings_deposit", methods=["POST", "GET"])
 def savings_deposit():
-    # Update the database
+    user = users.query.filter_by(username=session['username']).first()
+    current_amount = user.saving_balance
+    updated_amount = str(float(current_amount) + float(request.form['amount']))
+    stmt = (db.update(users).where(users.ssn==user.ssn).values(saving_balance=updated_amount))
+    db.session.execute(stmt)
+    db.session.commit()
     return render_template("successful_add.html")
 
 #Pops everything from session
