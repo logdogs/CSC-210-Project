@@ -13,7 +13,6 @@ from flask_wtf import FlaskForm
 from io import BytesIO
 from wtforms.validators import DataRequired, Length
 from wtforms import StringField, PasswordField, SubmitField
-import os
 
 
 #Flask and sqlalchemy stuff initialized here
@@ -408,7 +407,7 @@ def reset():
         if found_user:
             token = s.dumps(email, salt='email-confirm')
 
-            msg = Message('CCE Reset Password', sender='cengizjahnozel@gmail.com', recipients=[email])
+            msg = Message('CCE Reset Password', sender='ccebankrochester@gmail.com', recipients=[email])
             link = url_for('change_pw', token=token, _external=True)
             msg.body = "Your password reset link is {}".format(link)
             mail.send(msg)
