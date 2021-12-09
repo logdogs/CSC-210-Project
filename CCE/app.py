@@ -1,12 +1,20 @@
-from flask import Flask, render_template, url_for, redirect, request, session
+from operator import length_hint
+from flask import Flask, render_template, url_for, redirect, request, session, abort
 from flask.helpers import flash
 from flask_sqlalchemy import SQLAlchemy
 import random
 import bcrypt
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
-
+import base64
+import onetimepass
+import pyqrcode
+from flask_wtf import FlaskForm
+from io import BytesIO
+from wtforms.validators import DataRequired, Length
+from wtforms import StringField, PasswordField, SubmitField
 import os
+
 
 #Flask and sqlalchemy stuff initialized here
 app = Flask(__name__)
@@ -42,8 +50,9 @@ class users(db.Model):
     saving_acc_no = db.Column(db.String(10))
     checking_balance = db.Column(db.String(10))
     checking_acc_no = db.Column(db.String(10))
+    otp_secret = db.Column(db.String(16))
 
-    def __init__(self, first_name, middle_name, last_name, ssn, username, email, hash, user_id, saving_balance, saving_acc_no, checking_balance, checking_acc_no):
+    def __init__(self, first_name, middle_name, last_name, ssn, username, email, hash, user_id, saving_balance, saving_acc_no, checking_balance, checking_acc_no, otp_secret):
         self.first_name = first_name
         self.middle_name = middle_name
         self.last_name = last_name
@@ -56,7 +65,14 @@ class users(db.Model):
         self.saving_acc_no = saving_acc_no
         self.checking_balance = checking_balance
         self.checking_acc_no = checking_acc_no
+        self.otp_secret = otp_secret
 
+    def get_totp_uri(self):
+        return 'otpauth://totp/CCE:{0}?secret={1}&issuer=CCE' \
+            .format(self.username, self.otp_secret)
+
+    def verify_totp(self, pin):
+        return onetimepass.valid_totp(pin, self.otp_secret)
 # Stands for "parent-child relation"
 class pcr(db.Model):
     _id = db.Column("id", db.Integer, primary_key=True)
@@ -67,6 +83,13 @@ class pcr(db.Model):
     def __init__(self, parent_id, child_id):
         self.parent = parent_id
         self.child = child_id
+
+#wtforms login 
+class LoginForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    pin = StringField('Token', validators=[DataRequired(), Length(min=6, max=6)])
+    submit = SubmitField('Login')
 
 #Home page
 #@app.route("/", methods=["POST", "GET"])
@@ -87,8 +110,7 @@ def create():
         username = request.form["username"]
         email = request.form["email"]
         password = request.form["password"]
-
-
+        otp_secret = base64.b32encode(os.urandom(10)).decode('utf-8')
         #If duplicate account found
         found_user = users.query.filter_by(username=username).first()
         if found_user:
@@ -100,7 +122,7 @@ def create():
 
         #print("CREATE HASHED IS {hashed}".format(hashed=hashed))
 
-        usr = users(first_name, middle_name, last_name, ssn, username, email, hashed, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), 0, random.randint(0, 9999999999))
+        usr = users(first_name, middle_name, last_name, ssn, username, email, hashed, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), otp_secret)
         db.session.add(usr)
         db.session.commit()
 
@@ -123,8 +145,9 @@ def create():
         session["saving_acc_no"] = saving_acc_no
         session["checking_balance"] = checking_balance
         session["checking_acc_no"] = checking_acc_no
-
-        return redirect(url_for("user", user_id=user_id))
+        session["otp_secret"] = otp_secret
+        
+        return redirect(url_for('two_factor_setup'))
     #If we enter this page without filling form, check if user is already logged in
     #If so, log out, otherwise show create form
     else:
@@ -132,10 +155,78 @@ def create():
             end_session()
         return render_template("create.html")
 
+#Sends to QR code page 
+@app.route('/twofactor')
+def two_factor_setup():
+    if 'username' not in session:
+        return redirect(url_for('index'))
+    found_user = users.query.filter_by(username=session['username']).first()
+    if found_user is None:
+        return redirect(url_for('index'))
+    # since this page contains the sensitive qrcode, make sure the browser
+    # does not cache it
+    return render_template('two_factor_setup.html'), 200, {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'}
+
+#QRcode to make FreeTOTP
+@app.route('/qrcode')
+def qrcode():
+    if 'username' not in session:
+        abort(404)
+    found_user = users.query.filter_by(username=session['username']).first()
+    if found_user is None:
+        abort(404)
+
+    # for added security, remove username from session
+    del session['username']
+
+    url = pyqrcode.create(found_user.get_totp_uri())
+    stream = BytesIO()
+    url.svg(stream, scale=5)
+    return stream.getvalue(), 200, {
+        'Content-Type': 'image/svg+xml',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'}
 
 #Login page
 #@app.route("/login", methods=["POST", "GET"])
 #def login():
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm(request.form)
+    if request.method == 'POST' and form.validate_on_submit():
+        found_user = users.query.filter_by(username=form.username.data).first()
+        if not bcrypt.checkpw(form.password.data.encode('utf-8'), found_user.hash) or \
+                not user.verify_totp(form.token.data):
+            flash('Invalid username, password or token.')
+            return redirect(url_for('login'))
+        if found_user:
+            session["first_name"] = found_user.first_name
+            session["middle_name"] = found_user.middle_name
+            session["last_name"] = found_user.last_name
+            session["ssn"] = found_user.ssn
+            session["username"] = form.username
+            session["email"] = found_user.email
+            session["password"] = found_user.hash
+            session["user_id"] = found_user.user_id
+            session["saving_balance"] = found_user.saving_balance
+            session["saving_acc_no"] = found_user.saving_acc_no
+            session["checking_balance"] = found_user.checking_balance
+            session["checking_acc_no"] = found_user.checking_acc_no
+           
+            return redirect(url_for("user", user_id=session["user_id"]))
+        #Otherwise, let the user know they have entered wrong information
+        else:
+            flash("Username or password is incorrect. Try again.")
+            return render_template('login.html', form=form)
+    else:
+        if "username" in session:
+            return redirect(url_for("user", user_id=session["user_id"]))
+        return render_template('login.html', form=form)
+
 #Home page
 @app.route("/", methods=["POST", "GET"])
 def home():
@@ -192,13 +283,9 @@ def user(user_id):
         email = session["email"]
         password = session["password"]
         user_id = session["user_id"]
-        # Want to reload the saving_balance and checking_balance
-        updated_user = users.query.filter_by(username=username).first()
-        session["saving_balance"] = updated_user.saving_balance
-        session["checking_balance"] = updated_user.checking_balance
-        saving_balance = session["saving_balance"] # ****
+        saving_balance = session["saving_balance"]
         saving_acc_no = session["saving_acc_no"]
-        checking_balance = session["checking_balance"] # ***
+        checking_balance = session["checking_balance"]
         checking_acc_no = session["checking_acc_no"]
 
         return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no)
@@ -259,22 +346,17 @@ def checking_deposit():
     # Update the database
     user = users.query.filter_by(username=session['username']).first()
     current_amount = user.checking_balance
-    # Convert to floating point numbers, then convert back when entering the new value
-    updated_amount = str(float(current_amount) + float(request.form['amount']))
+    print("Current amount:" + str(current_amount))
+    print("Amount to add:" + str(request.form['amount']))
+    updated_amount = current_amount + request.form['amount']
     stmt = (db.update(users).where(users.ssn==user.ssn).values(checking_balance=updated_amount))
     db.session.execute(stmt)
     db.session.commit()
-    
     return render_template("successful_add.html")
 #
 @app.route("/savings_deposit", methods=["POST", "GET"])
 def savings_deposit():
-    user = users.query.filter_by(username=session['username']).first()
-    current_amount = user.saving_balance
-    updated_amount = str(float(current_amount) + float(request.form['amount']))
-    stmt = (db.update(users).where(users.ssn==user.ssn).values(saving_balance=updated_amount))
-    db.session.execute(stmt)
-    db.session.commit()
+    # Update the database
     return render_template("successful_add.html")
 
 #Pops everything from session
