@@ -13,6 +13,7 @@ from flask_wtf import FlaskForm
 from io import BytesIO
 from wtforms.validators import DataRequired, Length
 from wtforms import StringField, PasswordField, SubmitField
+import os
 
 
 #Flask and sqlalchemy stuff initialized here
