@@ -124,7 +124,6 @@ input[type="submit"]:hover{
 html {
   font-family: sans-serif;
 }
-
 body{
   margin: 0;
   padding: 0;
@@ -132,13 +131,15 @@ body{
   height: 100vh;
   overflow: hidden;
 }
-
 header {
   padding: 0px;
   text-align: center;
   background-color: white;
 }
-
+p{
+  text-align: center;
+  padding: 10px;
+}
 h1 {
   padding: 0px;
   text-align: center;
@@ -146,18 +147,15 @@ h1 {
   line-height: 100px;
   margin: 0;
 }
-
 h2 {
   padding: 10px;
   padding-top: 20px;
   padding-bottom: 20px;
 }
-
 h3 {
   padding: 10px;
   background-color: lightgrey;
 }
-
 section {
   width: 320px;
   margin: 0; 
@@ -165,7 +163,6 @@ section {
   display: flex;
   flex-flow: row wrap;
 }
-  
 article {
   padding: 10px;
   margin: 0px;
@@ -173,14 +170,11 @@ article {
   color: black;
   width: 320px;
 }
-
-
 #logo{ 
 	position:fixed; 
 	top:0; 
 	left:0; 
 } 
-
 #index{
   margin: 0;
   padding: 0;
@@ -188,7 +182,6 @@ article {
   height: 100vh;
   overflow: hidden;
 }
-
 #user {
   margin: 0;
   padding: 0;

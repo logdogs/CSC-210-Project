@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+
+{% block body %}
+
+<div id = "login">
+  <div class="center">
+      <h1>Login</h1>
+      <form action="/#" method='post'>
+        <p></p>
+        Username:
+        {{form.username}}
+        <p></p>
+        Password:
+        {{form.password}}
+        <p></p>
+        Token:
+        {{form.pin}}
+        <p></p>
+        <a href="{{ url_for('reset') }}"><div class="pass">Forgot Password?</div></a>
+        <span><input type="submit" name="submit" value="Login"/></span>
+      </form>
+      <div class="signup_link">
+        <form action="/">
+            <span><input type="submit" name="home" value="Back"/></span>
+        </form>
+    </div>
+  </div>
+
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for msg in messages %}
+            <h3>{{msg}}</h3>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+</div>
+<!--
+<form action="#" method="post">
+<input type="username" name="username" placeholder="Username">
+<input type="password" name="password" placeholder="Password">
+<p><input type="submit" name="submit"/></p>
+</form>
+<form action="/">
+    <p><input type="submit" name="home" value="Back" /></p>
+</form>
+-->
+
+{% endblock %}
+
