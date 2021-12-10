@@ -273,10 +273,12 @@ def login_post():
         if "username" in session:
             return redirect(url_for("user", uid=session["uid"]))
         return render_template('login.html', form=form)
+
 #Home page
 @app.route("/", methods=["POST", "GET"])
 def home():
-    
+        if "username" in session:
+            return redirect(url_for("user", uid=session["uid"]))
         return render_template("index.html")
 
 

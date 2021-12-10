@@ -9,4 +9,5 @@ make:
 	pip install onetimepass; \
 	pip install pyqrcode; \
 	pip install flask_wtf; \
+	pip install flask_login; \
 	python3 app.py
