@@ -9,7 +9,16 @@
 <div id = "login">
   <div class="center">
       <h1>Login</h1>
-      <form action="/#" method='post'>
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          {% for msg in messages %}
+              <h3>{{msg}}</h3>
+          {% endfor %}
+      {% endif %}
+      {% endwith %}
+      <form action="/login" method='post'>
+        {{ form.hidden_tag() }}
+        {{ form.csrf_token }}
         <p></p>
         Username:
         {{form.username}}
@@ -21,7 +30,7 @@
         {{form.pin}}
         <p></p>
         <a href="{{ url_for('reset') }}"><div class="pass">Forgot Password?</div></a>
-        <span><input type="submit" name="submit" value="Login"/></span>
+        {{form.submit()}}
       </form>
       <div class="signup_link">
         <form action="/">
@@ -29,15 +38,6 @@
         </form>
     </div>
   </div>
-
-
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        {% for msg in messages %}
-            <h3>{{msg}}</h3>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
 
 </div>
 <!--

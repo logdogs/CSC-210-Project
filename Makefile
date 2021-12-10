@@ -6,4 +6,7 @@ make:
 	pip install flask_sqlalchemy; \
 	pip install bcrypt; \
 	pip install flask_mail; \
+	pip install onetimepass; \
+	pip install pyqrcode; \
+	pip install flask_wtf; \
 	python3 app.py
