@@ -84,6 +84,21 @@ class pcr(db.Model):
         self.parent = parent_id
         self.child = child_id
 
+class child_limits(db.Model):
+    _id = db.Column("id", db.Integer, primary_key=True)
+    child = db.Column(db.String(9))
+    saving_spending_limit = db.Column(db.String(10))
+    checking_spending_limit = db.Column(db.String(10))
+    saving_spent = db.Column(db.String(10))
+    checking_spent = db.Column(db.String(10))
+
+    def __init__(self, child, saving_spending_limit, checking_spending_limit):
+        self.child = child
+        self.saving_spending_limit = saving_spending_limit
+        self.checking_spending_limit = checking_spending_limit
+        self.saving_spent = "0"
+        self.checking_spent = "0"
+
 #wtforms login 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -271,31 +286,61 @@ def home():
 
 
 #User dashboard. All information for users will be displayed here.
+# @app.route("/", methods=["POST", "GET"])
 @app.route("/user/<user_id>", methods=["POST", "GET"])
 def user(user_id):
     #If there is session, get info from that user
     if "username" in session:
-        first_name = session["first_name"]
-        middle_name = session["middle_name"]
-        last_name = session["last_name"]
-        ssn = session["ssn"]
-        username = session["username"]
-        email = session["email"]
-        password = session["password"]
-        user_id = session["user_id"]
-        # Want to reload the saving_balance and checking_balance
-        updated_user = users.query.filter_by(username=username).first()
-        session["saving_balance"] = updated_user.saving_balance
-        session["checking_balance"] = updated_user.checking_balance
-        saving_balance = session["saving_balance"] # ****
-        saving_acc_no = session["saving_acc_no"]
-        checking_balance = session["checking_balance"] # ***
-        checking_acc_no = session["checking_acc_no"]
+        child_relation = pcr.query.filter_by(child=session['ssn']).first()
+        if child_relation is None:
+            first_name = session["first_name"]
+            middle_name = session["middle_name"]
+            last_name = session["last_name"]
+            ssn = session["ssn"]
+            username = session["username"]
+            email = session["email"]
+            password = session["password"]
+            user_id = session["user_id"]
+            # Want to reload the saving_balance and checking_balance
+            updated_user = users.query.filter_by(username=username).first()
 
-        # Get the children of the user
-        children = pcr.query.filter_by(parent=user_id).all()
+            session["saving_balance"] = updated_user.saving_balance
+            session["checking_balance"] = updated_user.checking_balance
+            session["ssn"] = updated_user.ssn
+            saving_balance = session["saving_balance"]
+            saving_acc_no = session["saving_acc_no"]
+            checking_balance = session["checking_balance"]
+            checking_acc_no = session["checking_acc_no"]
 
-        return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, children=children)
+            # Get the children of the user
+            children = pcr.query.filter_by(parent=ssn).all()
+            print(children)
+
+            return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, children=children)
+        else:
+            first_name = session["first_name"]
+            middle_name = session["middle_name"]
+            last_name = session["last_name"]
+            ssn = session["ssn"]
+            username = session["username"]
+            email = session["email"]
+            password = session["password"]
+            user_id = session["user_id"]
+            # Want to reload the saving_balance and checking_balance
+            updated_user = users.query.filter_by(username=username).first()
+
+            session["saving_balance"] = updated_user.saving_balance
+            session["checking_balance"] = updated_user.checking_balance
+            session["ssn"] = updated_user.ssn
+            saving_balance = session["saving_balance"]
+            saving_acc_no = session["saving_acc_no"]
+            checking_balance = session["checking_balance"]
+            checking_acc_no = session["checking_acc_no"]
+
+            # Get the relations relevant to children accounts
+            limits = child_limits.query.filter_by(child=ssn).first()
+
+            return render_template("child_user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, saving_spending_limit=limits.saving_spending_limit, checking_spending_limit=limits.checking_spending_limit, checking_spent=limits.checking_spent, saving_spent=limits.saving_spent)
     #If there is no session, make user log in
     else:
         return redirect(url_for("home"))
@@ -320,6 +365,8 @@ def create_child_account():
         username = request.form['user_name']
         mail = request.form['email']
         pw = request.form['password']
+        saving_spending_limit = request.form['saving_spending_limit']
+        checking_spending_limit = request.form['checking_spending_limit']
         
         # Make sure they didn't re-add their child
         forgotten_child = users.query.filter_by(ssn=social).first()
@@ -328,12 +375,19 @@ def create_child_account():
             return render_template("create_child.html")
 
         # Create and add the child to the database
-        child = users(firstName, middleName, lastName, social, username, mail, pw)
-        db.add(child)
+        child = users(firstName, middleName, lastName, social, username, mail, bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt()), random.randint(0, 9999999999), 0, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), base64.b32encode(os.urandom(10)).decode('utf-8'))
+        db.session.add(child)
         # Find the parent, create the relation between them and their child, then add that to the database
-        parent = users.query().filter_by(ssn=parent_social).fetchone()
+        parent = users.query.filter_by(ssn=parent_social).first()
         parent_child_rel = pcr(parent.ssn, social)
-        db.add(parent_child_rel)
+        db.session.add(parent_child_rel)
+
+        # Set the limits
+        limits = child_limits(social, saving_spending_limit, checking_spending_limit)
+        db.session.add(limits)
+
+        db.session.commit()
+        return render_template("child_successfully_created.html")
 
     return render_template("create_child.html")
 
@@ -368,6 +422,84 @@ def savings_deposit():
     db.session.execute(stmt)
     db.session.commit()
     return render_template("successful_add.html")
+
+@app.route("/transferChecking", methods=["POST", "GET"])
+def transferChecking():
+    
+    return render_template("checking_transfer.html")
+@app.route("/transferSavings", methods=["POST", "GET"])
+def transferSavings():
+    
+    return render_template("savings_transfer.html")
+
+@app.route("/savings_transfer_deposit", methods=["POST", "GET"])
+def savings_transfer_deposit():
+    # Make sure the recipient exists
+    recipient = users.query.filter_by(username=request.form["recipient"]).first()
+    if recipient is None:
+        return render_template("transfer_recipient_error.html")
+    # Recipient is found
+    # Now check to make sure that the amount they want to transfer is less than or equal to their balance
+    if recipient.saving_balance > request.form['amount']:
+        return render_template("transfer_amount_error.html")
+    
+    # Check if the user is a child
+    is_child = pcr.query.filter_by(child=session['ssn']).first()
+    if is_child is not None:
+        # Check the limit and amount spent alread
+        limit = child_limits.query.filter_by(child=session['ssn']).first()
+        if limit.saving_spent + request.form['amount'] > limit.saving_spending_limit:
+            return render_template("transfer_amount_error.html")
+        
+    # Amount to transfer is acceptable, now make the transaction
+    # Take the money out of the session account
+    updated_giver_amount = str(float(session['saving_balance']) - float(request.form['amount']))
+    session['saving_balance'] = updated_giver_amount
+    stmt = (db.update(users).where(users.ssn==session['ssn']).values(saving_balance=updated_giver_amount))
+    db.session.execute(stmt)
+    updated_recipient_amount = str(float(recipient.saving_balance) + float(request.form['amount']))
+    stmt = (db.update(users).where(users.ssn==recipient.ssn).values(saving_balance=updated_recipient_amount))
+    db.session.execute(stmt)
+    if is_child is not None:
+        stmt = (db.update(child_limits).where(child_limits.child==session['ssn']).values(checking_spent=str(float(limit.checking_spent)+float(request.form['amount']))))
+        db.session.execute(stmt)
+    db.session.commit()
+    return render_template("successful_transfer.html")
+
+@app.route("/checking_transfer_deposit", methods=["POST", "GET"])
+def checking_transfer_deposit():
+    # Make sure the recipient exists
+    recipient = users.query.filter_by(username=request.form["recipient"]).first()
+    if recipient is None:
+        return render_template("transfer_recipient_error.html")
+    # Recipient is found
+    # Now check to make sure that the amount they want to transfer is less than or equal to their balance
+    if recipient.saving_balance > request.form['amount']:
+        return render_template("transfer_amount_error.html")
+
+    # Check if it's a child
+    is_child = pcr.query.filter_by(child=session['ssn']).first()
+    limit = None
+    if is_child is not None:
+        # Check to make sure they won't exceed their limit
+        limit = child_limits.query.filter_by(child=session['ssn']).first()
+        if limit.checking_spent + request.form['amount'] > limit.checking_spending_limit:
+            return render_template("transfer_amount_error.html")
+    # Amount to transfer is acceptable, now make the transaction
+    # Take the money out of the session account
+    updated_giver_amount = str(float(session['saving_balance']) - float(request.form['amount']))
+    session['saving_balance'] = updated_giver_amount
+    stmt = (db.update(users).where(users.ssn==session['ssn']).values(saving_balance=updated_giver_amount))
+    db.session.execute(stmt)
+    updated_recipient_amount = str(float(recipient.saving_balance) + float(request.form['amount']))
+    stmt = (db.update(users).where(users.ssn==recipient.ssn).values(saving_balance=updated_recipient_amount))
+    db.session.execute(stmt)
+    if is_child is not None:
+        # Update the saving
+        stmt = (db.update(child_limits).where(child_limits.child==session['ssn']).values(saving_spent=str(float(limit.saving_spent)+float(request.form['amount']))))
+        db.execute(stmt)
+    db.session.commit()
+    return render_template("successful_transfer.html")
 
 #Pops everything from session
 def end_session():

@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block head %}
+{% endblock %}
+{% block body %}
+    <div>
+        Money successfully sent!
+    </div>
+    <div>
+        <form action="{{url_for('home')}}">
+            <input type="submit" value="home">
+        </form>
+    </div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block head %}
+{% endblock %}
+
+{% block body %}
+    <form action="/checking_transfer_deposit" method="POST">
+        <div>
+            <label for="recipient">Recipient: </label>
+            <input type="text" name="recipient" id="recipient" required>
+        </div>
+        <div>
+            <label for="amount">Amount: </label>
+            <input type="number" name="amount" id="amount" required>
+        </div>
+        <input type="submit" value="Send">
+    </form>
+{% endblock %}

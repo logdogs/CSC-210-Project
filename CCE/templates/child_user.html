@@ -13,6 +13,8 @@
     <div id="money">
         <h2>Savings: {{saving_acc_no}}</h2>
         <h3>${{saving_balance}}</h3><hr>
+        <h2>Spending Limit on Savings: {{saving_spending_limit}}</h2>
+        <h3>Savings Spent So Far: {{saving_spent}}</h3>
         <form action="/addToSavings">
             <input type="submit" name="add_to_savings" id="add_to_savings" value="Add to Savings">
         </form>
@@ -26,6 +28,8 @@
     <div id="money">
         <h2>Checking: {{checking_acc_no}}</h2>
         <h3>${{checking_balance}}</h3><hr>
+        <h2>Spending Limit on Checking: {{checking_spending_limit}}</h2>
+        <h3>Checking spent So Far: {{checking_spent}}</h3>
         <form action="/addToChecking">
             <input type="submit" name="add_to_checking" id="add_to_checking" value="Add to Checking">
         </form>
@@ -35,31 +39,7 @@
             </form>
         </div>
     </div>
-    <div id="money">
-        <h2>Children Accounts: </h2>
-        {% for child in children %}
-            <div>
-                <a href="">{{child.username}}</a>
-            </div>
-        {% endfor %}
-        <div>
-            <form action="/create_child_account">
-                <p><input type="submit" id="register_child" name="register_child" value="Register Child" ></p>
-            </form>
-        </div>
-    </div>
 
-<!--
-<form action="/">
-    <p><input type="submit" name="home" value="Home" /></p>
-</form>
--->
-
-{% if username == "admin" %}    
-    <form action="/user_list">
-        <p><input type="submit" id="user_list" name="user_list" value="User List"></p>
-    </form>
-{% endif %}
 <form action="/logout">
     <p><input type="submit" style="background-color:#2ec9ff; border-color:#2ec9ff;" name="logout" value="Log out" /></p>
 </form>
