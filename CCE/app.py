@@ -282,8 +282,8 @@ def home():
 
 #User dashboard. All information for users will be displayed here.
 # @app.route("/", methods=["POST", "GET"])
-@app.route("/user/<user_id>", methods=["POST", "GET"])
-def user(user_id):
+@app.route("/user/<uid>", methods=["POST", "GET"])
+def user(uid):
     #If there is session, get info from that user
     if "username" in session:
         child_relation = pcr.query.filter_by(child=session['ssn']).first()
@@ -295,9 +295,9 @@ def user(user_id):
             username = session["username"]
             email = session["email"]
             password = session["password"]
-            user_id = session["user_id"]
+            uid = session["uid"]
             # Want to reload the saving_balance and checking_balance
-            updated_user = users.query.filter_by(username=username).first()
+            updated_user = users.query.filter_by(ssn=ssn).first()
 
             session["saving_balance"] = updated_user.saving_balance
             session["checking_balance"] = updated_user.checking_balance
@@ -311,7 +311,7 @@ def user(user_id):
             children = pcr.query.filter_by(parent=ssn).all()
             print(children)
 
-            return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, children=children)
+            return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, uid=uid, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, children=children)
         else:
             first_name = session["first_name"]
             middle_name = session["middle_name"]
@@ -320,7 +320,7 @@ def user(user_id):
             username = session["username"]
             email = session["email"]
             password = session["password"]
-            user_id = session["user_id"]
+            uid = session["uid"]
             # Want to reload the saving_balance and checking_balance
             updated_user = users.query.filter_by(username=username).first()
 
@@ -335,7 +335,7 @@ def user(user_id):
             # Get the relations relevant to children accounts
             limits = child_limits.query.filter_by(child=ssn).first()
 
-            return render_template("child_user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, saving_spending_limit=limits.saving_spending_limit, checking_spending_limit=limits.checking_spending_limit, checking_spent=limits.checking_spent, saving_spent=limits.saving_spent)
+            return render_template("child_user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, uid=uid, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no, saving_spending_limit=limits.saving_spending_limit, checking_spending_limit=limits.checking_spending_limit, checking_spent=limits.checking_spent, saving_spent=limits.saving_spent)
     #If there is no session, make user log in
     else:
         return redirect(url_for("home"))
@@ -410,7 +410,7 @@ def checking_deposit():
 #
 @app.route("/savings_deposit", methods=["POST", "GET"])
 def savings_deposit():
-    user = users.query.filter_by(username=session['username']).first()
+    user = users.query.filter_by(ssn=session['ssn']).first()
     current_amount = user.saving_balance
     updated_amount = str(float(current_amount) + float(request.form['amount']))
     stmt = (db.update(users).where(users.ssn==user.ssn).values(saving_balance=updated_amount))
