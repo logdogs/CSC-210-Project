@@ -16,6 +16,7 @@ from wtforms.validators import DataRequired, Length
 from wtforms import StringField, PasswordField, SubmitField
 import os
 
+run_first = True
 
 #Flask and sqlalchemy stuff initialized here
 app = Flask(__name__)
@@ -277,9 +278,11 @@ def login_post():
 #Home page
 @app.route("/", methods=["POST", "GET"])
 def home():
-        if "username" in session:
-            return redirect(url_for("user", uid=session["uid"]))
-        return render_template("index.html")
+    if run_first:
+        end_session()
+    if "username" in session:
+        return redirect(url_for("user", uid=session["uid"]))
+    return render_template("index.html")
 
 
 #User dashboard. All information for users will be displayed here.
@@ -289,6 +292,7 @@ def user(uid):
     #If there is session, get info from that user
     if "username" in session:
         child_relation = pcr.query.filter_by(child=session['ssn']).first()
+        print(child_relation)
         if child_relation is None:
             first_name = session["first_name"]
             middle_name = session["middle_name"]
@@ -361,7 +365,10 @@ def create_child_account():
         parent_social = request.form['parent_ssn']
         username = request.form['user_name']
         mail = request.form['email']
-        pw = request.form['password']
+        password = request.form['password']
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        otp_secret = base64.b32encode(os.urandom(10)).decode('utf-8')
+
         saving_spending_limit = request.form['saving_spending_limit']
         checking_spending_limit = request.form['checking_spending_limit']
         
@@ -372,7 +379,7 @@ def create_child_account():
             return render_template("create_child.html")
 
         # Create and add the child to the database
-        child = users(firstName, middleName, lastName, social, username, mail, bcrypt.hashpw(pw.encode('utf-8'), bcrypt.gensalt()), random.randint(0, 9999999999), 0, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), base64.b32encode(os.urandom(10)).decode('utf-8'))
+        child = users(firstName, middleName, lastName, social, username, mail, hashed, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), 0, random.randint(0, 9999999999), otp_secret)
         db.session.add(child)
         # Find the parent, create the relation between them and their child, then add that to the database
         parent = users.query.filter_by(ssn=parent_social).first()
@@ -506,7 +513,7 @@ def end_session():
     session.pop("ssn", None)
     session.pop("username", None)
     session.pop("email", None)
-    session.pop("password", None)
+    session.pop("hashed", None)
     session.pop("uid", None)
     session.pop("saving_balance", None)
     session.pop("saving_acc_no", None)
