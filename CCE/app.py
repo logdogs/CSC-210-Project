@@ -2,6 +2,7 @@ from operator import length_hint
 from flask import Flask, render_template, url_for, redirect, request, session, abort
 from flask.helpers import flash
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user
 import random
 import bcrypt
 from flask_mail import Mail, Message
@@ -35,9 +36,12 @@ s = URLSafeTimedSerializer('AJHHJAKKHJASKHJDKAJHJHELPHKFHJAKSASHJKADHJKHJKASHJKS
 #Database created
 db = SQLAlchemy(app)
 
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+login_manager.init_app(app)
 #Database model class. Can add more columns for more properties
-class users(db.Model):
-    _id = db.Column("id", db.Integer, primary_key=True)
+class users(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(100))
     middle_name = db.Column(db.String(100))
     last_name = db.Column(db.String(100))
@@ -45,14 +49,14 @@ class users(db.Model):
     username = db.Column(db.String(100))
     email = db.Column(db.String(100))
     hash = db.Column(db.String(100))
-    user_id = db.Column(db.String(10))
+    uid = db.Column(db.String(10))
     saving_balance = db.Column(db.String(10))
     saving_acc_no = db.Column(db.String(10))
     checking_balance = db.Column(db.String(10))
     checking_acc_no = db.Column(db.String(10))
     otp_secret = db.Column(db.String(16))
 
-    def __init__(self, first_name, middle_name, last_name, ssn, username, email, hash, user_id, saving_balance, saving_acc_no, checking_balance, checking_acc_no, otp_secret):
+    def __init__(self, first_name, middle_name, last_name, ssn, username, email, hash, uid, saving_balance, saving_acc_no, checking_balance, checking_acc_no, otp_secret):
         self.first_name = first_name
         self.middle_name = middle_name
         self.last_name = last_name
@@ -60,19 +64,21 @@ class users(db.Model):
         self.username = username
         self.email = email
         self.hash = hash
-        self.user_id = user_id
+        self.uid = uid
         self.saving_balance = saving_balance
         self.saving_acc_no = saving_acc_no
         self.checking_balance = checking_balance
         self.checking_acc_no = checking_acc_no
         self.otp_secret = otp_secret
-
+    @login_manager.user_loader
+    def load_user(uid):
+        return users.query.get(uid)
     def get_totp_uri(self):
         return 'otpauth://totp/CCE:{0}?secret={1}&issuer=CCE' \
             .format(self.username, self.otp_secret)
 
-    def verify_totp(self, pin):
-        return onetimepass.valid_totp(pin, self.otp_secret)
+    def verify_totp(self, token):   
+        return onetimepass.valid_totp(token, self.otp_secret,window=2)
 # Stands for "parent-child relation"
 class pcr(db.Model):
     _id = db.Column("id", db.Integer, primary_key=True)
@@ -89,7 +95,7 @@ class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     pin = StringField('Token', validators=[DataRequired(), Length(min=6, max=6)])
-    submit = SubmitField('Login')
+    submit = SubmitField('Submit')
 
 #Home page
 #@app.route("/", methods=["POST", "GET"])
@@ -127,7 +133,7 @@ def create():
         db.session.commit()
 
         found_user = users.query.filter_by(username=username).first()
-        user_id = found_user.user_id
+        uid = found_user.uid
         saving_balance = found_user.saving_balance
         saving_acc_no = found_user.saving_acc_no
         checking_balance = found_user.checking_balance
@@ -140,12 +146,11 @@ def create():
         session["username"] = username
         session["email"] = email
         session["password"] = password
-        session["user_id"] = user_id
+        session["uid"] = uid
         session["saving_balance"] = saving_balance
         session["saving_acc_no"] = saving_acc_no
         session["checking_balance"] = checking_balance
         session["checking_acc_no"] = checking_acc_no
-        session["otp_secret"] = otp_secret
         
         return redirect(url_for('two_factor_setup'))
     #If we enter this page without filling form, check if user is already logged in
@@ -194,85 +199,75 @@ def qrcode():
 #Login page
 #@app.route("/login", methods=["POST", "GET"])
 #def login():
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-    form = LoginForm(request.form)
-    if request.method == 'POST' and form.validate_on_submit():
-        found_user = users.query.filter_by(username=form.username.data).first()
-        if not bcrypt.checkpw(form.password.data.encode('utf-8'), found_user.hash) or \
-                not user.verify_totp(form.token.data):
-            flash('Invalid username, password or token.')
-            return redirect(url_for('login'))
+    form = LoginForm(request.method)
+    
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+        pin = form.pin.data
+        remember = True if request.form.get('remember') else False
+
+        found_user = users.query.filter_by(username=username).first()
+        if not bcrypt.checkpw(password.encode('utf-8'), found_user.hash) or \
+            not found_user.verify_totp(pin):
+                flash('Invalid username, password or token.')
+                return redirect(url_for('login'))
         if found_user:
-            session["first_name"] = found_user.first_name
-            session["middle_name"] = found_user.middle_name
-            session["last_name"] = found_user.last_name
-            session["ssn"] = found_user.ssn
-            session["username"] = form.username
-            session["email"] = found_user.email
-            session["password"] = found_user.hash
-            session["user_id"] = found_user.user_id
-            session["saving_balance"] = found_user.saving_balance
-            session["saving_acc_no"] = found_user.saving_acc_no
-            session["checking_balance"] = found_user.checking_balance
-            session["checking_acc_no"] = found_user.checking_acc_no
-           
-            return redirect(url_for("user", user_id=session["user_id"]))
+            login_user(found_user, remember=remember)
+            return redirect(url_for("user", uid=session["uid"]))
         #Otherwise, let the user know they have entered wrong information
+
+    return render_template('login.html', form=form)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_post():
+    form = LoginForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            username = form.username.data
+            password = form.password.data
+            pin = form.pin.data
+            remember = True if request.form.get('remember') else False
+            found_user = users.query.filter_by(username=username).first()
+            if users is None or not bcrypt.checkpw(password.encode('utf-8'), found_user.hash) or \
+                not found_user.verify_totp(pin):
+                    flash('Invalid username, password or token.')
+                    return redirect(url_for('login'))
+            if found_user:
+                login_user(found_user, remember=remember)
+                session["first_name"] = found_user.first_name
+                session["middle_name"] = found_user.middle_name
+                session["last_name"] = found_user.last_name
+                session["ssn"] = found_user.ssn
+                session["username"] = form.username
+                session["email"] = found_user.email
+                session["password"] = found_user.hash
+                session["uid"] = found_user.uid
+                session["saving_balance"] = found_user.saving_balance
+                session["saving_acc_no"] = found_user.saving_acc_no
+                session["checking_balance"] = found_user.checking_balance
+                session["checking_acc_no"] = found_user.checking_acc_no
+                return redirect(url_for("user", uid=session["uid"]))
+            #Otherwise, let the user know they have entered wrong information
         else:
-            flash("Username or password is incorrect. Try again.")
-            return render_template('login.html', form=form)
+                flash("Invalid username, password or token.")
+                return render_template('login.html', form=form)
     else:
         if "username" in session:
-            return redirect(url_for("user", user_id=session["user_id"]))
+            return redirect(url_for("user", uid=session["uid"]))
         return render_template('login.html', form=form)
-
 #Home page
 @app.route("/", methods=["POST", "GET"])
 def home():
-    #If we've just entered information, it will use that information to check if user exists
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-
-        #Check if name existed
-        found_user = users.query.filter_by(username=username).first()
-        #If found, check if password is correct
-        if not bcrypt.checkpw(password.encode('utf-8'), found_user.hash):
-            flash("Username or password is incorrect. Try again.")
-            return redirect(url_for("home")) 
-        #If password is correct, add user's info to session, then go to the page
-        if found_user:
-            session["first_name"] = found_user.first_name
-            session["middle_name"] = found_user.middle_name
-            session["last_name"] = found_user.last_name
-            session["ssn"] = found_user.ssn
-            session["username"] = username
-            session["email"] = found_user.email
-            session["password"] = found_user.hash
-            session["user_id"] = found_user.user_id
-            session["saving_balance"] = found_user.saving_balance
-            session["saving_acc_no"] = found_user.saving_acc_no
-            session["checking_balance"] = found_user.checking_balance
-            session["checking_acc_no"] = found_user.checking_acc_no
-
-            return redirect(url_for("user", user_id=session["user_id"]))
-        #Otherwise, let the user know they have entered wrong information
-        else:
-            flash("Username or password is incorrect. Try again.")
-            return redirect(url_for("home")) 
-
-    #If we enter this page without filling form, check if user is already logged in
-    #If so, return user, otherwise show login form
-    else:
-        if "username" in session:
-            return redirect(url_for("user", user_id=session["user_id"]))
+    
         return render_template("index.html")
 
 
 #User dashboard. All information for users will be displayed here.
-@app.route("/user/<user_id>", methods=["POST", "GET"])
-def user(user_id):
+@app.route("/user/<uid>", methods=["POST", "GET"])
+def user(uid):
     #If there is session, get info from that user
     if "username" in session:
         first_name = session["first_name"]
@@ -282,17 +277,17 @@ def user(user_id):
         username = session["username"]
         email = session["email"]
         password = session["password"]
-        user_id = session["user_id"]
+        uid = session["uid"]
         # Want to reload the saving_balance and checking_balance
         updated_user = users.query.filter_by(username=username).first()
-        session["saving_balance"] = updated_user.saving_balance
-        session["checking_balance"] = updated_user.checking_balance
+        #session["saving_balance"] = updated_user.saving_balance
+        #session["checking_balance"] = updated_user.checking_balance
         saving_balance = session["saving_balance"] # ****
         saving_acc_no = session["saving_acc_no"]
         checking_balance = session["checking_balance"] # ***
         checking_acc_no = session["checking_acc_no"]
 
-        return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, user_id=user_id, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no)
+        return render_template("user.html", first_name=first_name, middle_name=middle_name, last_name=last_name, ssn=ssn, username=username, email=email, password=password, uid=uid, saving_balance=saving_balance, saving_acc_no=saving_acc_no, checking_balance=checking_balance, checking_acc_no=checking_acc_no)
     #If there is no session, make user log in
     else:
         return redirect(url_for("home"))
@@ -375,7 +370,7 @@ def end_session():
     session.pop("username", None)
     session.pop("email", None)
     session.pop("password", None)
-    session.pop("user_id", None)
+    session.pop("uid", None)
     session.pop("saving_balance", None)
     session.pop("saving_acc_no", None)
     session.pop("checking_balance", None)
